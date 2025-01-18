@@ -39,7 +39,7 @@ struct RestApiTests {
 }
 
 enum MockRestApiWorker {
-    
+
     // МОК GET без параметров
     struct Get: SwiftWorkers.RestApi.Worker {
         var baseUrlPath: String = "https://www.example.com/request"

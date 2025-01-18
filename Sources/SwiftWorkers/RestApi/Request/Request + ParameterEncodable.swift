@@ -64,7 +64,7 @@ internal extension RestApi.Request.ParameterEncodable {
 }
 
 // Дефолтная реализация метода, выполняющего запрос с параметрами без возвращаемого значения
-extension RestApi.Request.ParameterEncodable {
+public extension RestApi.Request.ParameterEncodable {
     func makeRequest(parameters: Parameters) async throws(RestApi.WorkerError) {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await self.buildInitialParametersWithCommonHandlers()
@@ -76,7 +76,7 @@ extension RestApi.Request.ParameterEncodable {
 
 // Дефолтная реализация метода, выполняющего запрос с параметрами с вовзращаемым значением
 // Данный метод доступен только когда воркер подписан сразу на ParameterEncodable и ResponseDecodable
-extension RestApi.Request.ParameterEncodable where Self: RestApi.Response.ResponseDecodable {
+public extension RestApi.Request.ParameterEncodable where Self: RestApi.Response.ResponseDecodable {
     func makeRequest(parameters: Parameters) async throws(RestApi.WorkerError) -> Response {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await buildInitialParametersWithCommonHandlers()
