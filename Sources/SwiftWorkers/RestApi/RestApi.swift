@@ -65,8 +65,13 @@ public extension RestApi.Worker {
         
         var session = self.session
         
-        // Авторизация
+        // Подготовка запроса
         do {
+            // Добавляем дополнительные HTTP-заголовки
+            if let _self = self as? RestApi.Request.HeaderFieldAddable {
+                try await _self.addHeaders(request: &urlRequest)
+            }
+            
             // Добавляем HTTP-авторизацию
             if let _self = self as? RestApi.Authorization.HttpAuthorizable {
                 try await _self.addHttpAuthorizationHeader(session: &session, request: &urlRequest)
@@ -78,7 +83,7 @@ public extension RestApi.Worker {
         } catch let error as CancellationError {
             throw error
         } catch {
-            throw RestApi.WorkerError.failedAuthorizationPreparation(error: error)
+            throw RestApi.WorkerError.failedRequestPreparation(error: error)
         }
         
         return (session, urlRequest)
@@ -86,6 +91,9 @@ public extension RestApi.Worker {
     
     @discardableResult
     internal func runRequest(session: URLSession, urlRequest: URLRequest) async throws -> Data {
+        if let _self = self as? RestApi.Testable {
+            try await _self.testable_hookCheckingURLRequestBeforeSending?(urlRequest)
+        }
         // Запрос в сеть
         let data: Data
         let response: URLResponse

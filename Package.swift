@@ -19,7 +19,10 @@ let package = Package(
             name: "SwiftWorkers"),
         .testTarget(
             name: "SwiftWorkersTests",
-            dependencies: ["SwiftWorkers"]
+            dependencies: ["SwiftWorkers"],
+            swiftSettings: [
+                .define("TEST")
+            ]
         ),
     ]
 )

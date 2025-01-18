@@ -22,7 +22,7 @@ public extension RestApi {
         /// Неверный код ответа сервера
         case failedHttpResponseStatusCode(code: Int)
         /// Ошибка в процессе подготовки данных авторизации
-        case failedAuthorizationPreparation(error: Error)
+        case failedRequestPreparation(error: Error)
         /// Другая ошибка, например CancellationError
         case other(error: Error)
     }

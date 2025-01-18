@@ -2,10 +2,6 @@ import Testing
 @testable import SwiftWorkers
 import Foundation
 
-//@Test func example() async throws {
-//    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-//}
-
 struct RestApiTests {
     
     // Кейс 1. Запрос без параметров. Проверяется факт запроса
@@ -21,7 +17,6 @@ struct RestApiTests {
     @Test func requestWithParametersAndResponse() async throws {
         let testedClient = MockRestApiWorker.GetOutIn<MockRestApiWorker.Out, String>()
         let result = try await testedClient.makeRequest(parameters: .init())
-        print(result)
         #expect(result == "Hello my dier friend")
     }
     
@@ -35,6 +30,16 @@ struct RestApiTests {
                 confirm.confirm()
             }
         }
+    }
+    
+    // Кейс 4ю Запрос с дополнительными HTTP-заголовками
+    @Test func requestWithAdditionalHttpHeaders() async throws {
+        var client = MockRestApiWorker.GetAdditionalHeaders()
+        client.testable_hookCheckingURLRequestBeforeSending = { @Sendable request in
+            #expect(request.allHTTPHeaderFields?.count == 1)
+            #expect(request.allHTTPHeaderFields?["AdditionalHeader"] == "AdditionalHeaderValue")
+        }
+        try await client.makeRequest()
     }
 }
 
@@ -71,6 +76,25 @@ enum MockRestApiWorker {
             configuration.protocolClasses = [URLProtocolMock.self]
             return URLSession(configuration: configuration)
         }
+    }
+    
+    // МОК без параметров со дополнительными HTTP Headers
+    
+    struct GetAdditionalHeaders: SwiftWorkers.RestApi.Worker,
+                                 SwiftWorkers.RestApi.Request.HeaderFieldAddable,
+                                 SwiftWorkers.RestApi.Testable {
+        var baseUrlPath: String = "https://www.example.com/request"
+        var urlEndpoint: String = ""
+        var requestMethod: SwiftWorkers.RestApi.NetworkRequestMethod = .get
+        var session: URLSession {
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.protocolClasses = [URLProtocolMock.self]
+            return URLSession(configuration: configuration)
+        }
+        var additionalHeaderFields: [RestApi.Request.AdditionalHeaderField] = [
+            .init(name: "AdditionalHeader", value: "AdditionalHeaderValue")
+        ]
+        var testable_hookCheckingURLRequestBeforeSending: (@Sendable (URLRequest) async throws -> Void)? = nil
     }
     
     // Структура для кодирования данных в запрос
