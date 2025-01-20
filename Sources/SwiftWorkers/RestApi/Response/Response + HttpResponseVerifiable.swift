@@ -10,12 +10,12 @@ import Foundation
 public extension RestApi.Response {
     
     /// Расширение для обработки полученного статуса ответа от сервера
-    protocol HttpResponseVerifiable {
+    protocol HttpStatusCodeVerifiable {
         func handle(httpResponse: HTTPURLResponse, data: Data) throws
     }
 }
 
-public extension RestApi.Response.HttpResponseVerifiable {
+public extension RestApi.Response.HttpStatusCodeVerifiable {
     func handle(httpResponse: HTTPURLResponse, data: Data) throws {
         guard httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 else {
             throw RestApi.WorkerError.failedHttpResponseStatusCode(code: httpResponse.statusCode)

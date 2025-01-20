@@ -4,7 +4,6 @@
 //
 //  Created by USOV Vasily on 15.01.2025.
 //
-
 import Foundation
 
 // MARK: - Namespace
@@ -35,7 +34,7 @@ public extension RestApi {
         /// Базовый объект URLRequest, используемый для запроса
         func request(forURL url: URL) -> URLRequest
         /// Запуск выполнения запроса без параметров и возвращаемого значения
-        func makeRequest() async throws(RestApi.WorkerError)
+        func launch() async throws(RestApi.WorkerError)
     }
 }
 
@@ -107,7 +106,7 @@ public extension RestApi.Worker {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw RestApi.WorkerError.failedRequest(description: "Response is not HTTPURLResponse")
         }
-        if let _self = self as? RestApi.Response.HttpResponseVerifiable {
+        if let _self = self as? RestApi.Response.HttpStatusCodeVerifiable {
             try _self.handle(httpResponse: httpResponse, data: data)
         }
         
@@ -147,7 +146,7 @@ public extension RestApi.Worker {
         }
     }
     
-    func makeRequest() async throws(RestApi.WorkerError) {
+    func launch() async throws(RestApi.WorkerError) {
         try await wrappedIntoCancellableTask {
             let (session, request) = try await self.buildInitialParametersWithCommonHandlers()
             try await self.runRequest(session: session, urlRequest: request)

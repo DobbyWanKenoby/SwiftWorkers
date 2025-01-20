@@ -8,7 +8,7 @@ struct RestApiTests {
     @Test func simpleRequest() async throws {
         try await confirmation { confirm in
             let testedClient = MockRestApiWorker.Get()
-            try await testedClient.makeRequest()
+            try await testedClient.launch()
             confirm.confirm()
         }
     }
@@ -16,7 +16,7 @@ struct RestApiTests {
     // Кейс 2. Запрос с параметрами. Проверяется корректность кодирования параметров в URL и декодирования в тип String
     @Test func requestWithParametersAndResponse() async throws {
         let testedClient = MockRestApiWorker.GetOutIn<MockRestApiWorker.Out, String>()
-        let result = try await testedClient.makeRequest(parameters: .init())
+        let result = try await testedClient.launch(withParameters: .init())
         #expect(result == "Hello my dier friend")
     }
     
@@ -25,7 +25,7 @@ struct RestApiTests {
         try await confirmation { confirm in
             let testedClient = MockRestApiWorker.GetOutIn<MockRestApiWorker.Out, MockRestApiWorker.In>()
             do {
-                let _ = try await testedClient.makeRequest(parameters: .init())
+                let _ = try await testedClient.launch(withParameters: .init())
             } catch RestApi.WorkerError.failedResultDecoding(description: _) {
                 confirm.confirm()
             }
@@ -39,7 +39,7 @@ struct RestApiTests {
             #expect(request.allHTTPHeaderFields?.count == 1)
             #expect(request.allHTTPHeaderFields?["AdditionalHeader"] == "AdditionalHeaderValue")
         }
-        try await client.makeRequest()
+        try await client.launch()
     }
 }
 
@@ -49,6 +49,21 @@ enum MockRestApiWorker {
     struct Get: SwiftWorkers.RestApi.Worker {
         var baseUrlPath: String = "https://www.example.com/request"
         var urlEndpoint: String = ""
+        var requestMethod: SwiftWorkers.RestApi.NetworkRequestMethod = .get
+        var session: URLSession {
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.protocolClasses = [URLProtocolMock.self]
+            return URLSession(configuration: configuration)
+        }
+    }
+    
+    struct GetOut<Request: Encodable & Sendable>: RestApi.Worker,
+                                                  RestApi.Request.ParameterEncodable {
+        typealias Parameters = Request
+        var encodingMethod: SwiftWorkers.RestApi.Request.EncodingMethod = .asItemsToUrl
+        
+        var baseUrlPath: String = "https://www.example.com"
+        var urlEndpoint: String = "/request"
         var requestMethod: SwiftWorkers.RestApi.NetworkRequestMethod = .get
         var session: URLSession {
             let configuration = URLSessionConfiguration.ephemeral
@@ -83,8 +98,8 @@ enum MockRestApiWorker {
     struct GetAdditionalHeaders: SwiftWorkers.RestApi.Worker,
                                  SwiftWorkers.RestApi.Request.HeaderFieldAddable,
                                  SwiftWorkers.RestApi.Testable {
-        var baseUrlPath: String = "https://www.example.com/request"
-        var urlEndpoint: String = ""
+        var baseUrlPath: String = "https://www.example.com"
+        var urlEndpoint: String = "/request"
         var requestMethod: SwiftWorkers.RestApi.NetworkRequestMethod = .get
         var session: URLSession {
             let configuration = URLSessionConfiguration.ephemeral

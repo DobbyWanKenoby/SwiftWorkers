@@ -17,7 +17,7 @@ public extension RestApi.Request {
         /// Способ кодирования параметров
         var encodingMethod: EncodingMethod { get }
         /// Запуск запрос с передачей параметров без возвращаемого значения
-        func makeRequest(parameters: Parameters) async throws(RestApi.WorkerError)
+        func launch(withParameters: Parameters) async throws(RestApi.WorkerError)
     }
     
 }
@@ -65,10 +65,10 @@ internal extension RestApi.Request.ParameterEncodable {
 
 // Дефолтная реализация метода, выполняющего запрос с параметрами без возвращаемого значения
 public extension RestApi.Request.ParameterEncodable {
-    func makeRequest(parameters: Parameters) async throws(RestApi.WorkerError) {
+    func launch(withParameters: Parameters) async throws(RestApi.WorkerError) {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await self.buildInitialParametersWithCommonHandlers()
-            try encode(parameters: parameters, intoRequest: &request)
+            try encode(parameters: withParameters, intoRequest: &request)
             try await runRequest(session: session, urlRequest: request)
         }
     }
@@ -77,10 +77,10 @@ public extension RestApi.Request.ParameterEncodable {
 // Дефолтная реализация метода, выполняющего запрос с параметрами с вовзращаемым значением
 // Данный метод доступен только когда воркер подписан сразу на ParameterEncodable и ResponseDecodable
 public extension RestApi.Request.ParameterEncodable where Self: RestApi.Response.ResponseDecodable {
-    func makeRequest(parameters: Parameters) async throws(RestApi.WorkerError) -> Response {
+    func launch(withParameters: Parameters) async throws(RestApi.WorkerError) -> Response {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await buildInitialParametersWithCommonHandlers()
-            try encode(parameters: parameters, intoRequest: &request)
+            try encode(parameters: withParameters, intoRequest: &request)
             let data = try await runRequest(session: session, urlRequest: request)
             return try decodingMethod.decode(data: data)
         }
