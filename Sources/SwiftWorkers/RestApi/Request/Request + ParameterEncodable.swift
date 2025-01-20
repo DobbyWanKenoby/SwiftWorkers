@@ -9,22 +9,22 @@ import Foundation
 
 // MARK: - Interface
 
-public extension RestApi.Request {
+public extension RestAPI.Request {
     
     /// Протокол для кодирования переданных в запрос параметров
-    protocol ParameterEncodable where Self: RestApi.Worker {
+    protocol ParameterEncodable where Self: RestAPI.Worker {
         associatedtype Parameters: Sendable, Encodable
         /// Способ кодирования параметров
         var encodingMethod: EncodingMethod { get }
         /// Запуск запрос с передачей параметров без возвращаемого значения
-        func launch(withParameters: Parameters) async throws(RestApi.WorkerError)
+        func makeRequest(withParameters: Parameters) async throws(RestAPI.WorkerError)
     }
     
 }
 
 // MARK: - Subtypes
 
-public extension RestApi.Request {
+public extension RestAPI.Request {
     /// Способ встраивания переданных данных в запрос
     enum EncodingMethod: Sendable {
         /// Данные сериализуются в JSON и встраиваются в тело запроса
@@ -53,19 +53,19 @@ public extension RestApi.Request {
 // MARK: - Implementation
 
 // Дефолтная реализация метода кодирования параметров в запрос
-internal extension RestApi.Request.ParameterEncodable {
+internal extension RestAPI.Request.ParameterEncodable {
      func encode<T: Encodable>(parameters: T, intoRequest urlRequest: inout URLRequest) throws {
         do {
             try encodingMethod.encode(parameters: parameters, intoRequest: &urlRequest)
         } catch {
-            throw RestApi.WorkerError.failedParametersEncoding(description: error.localizedDescription)
+            throw RestAPI.WorkerError.failedParametersEncoding(description: error.localizedDescription)
         }
     }
 }
 
 // Дефолтная реализация метода, выполняющего запрос с параметрами без возвращаемого значения
-public extension RestApi.Request.ParameterEncodable {
-    func launch(withParameters: Parameters) async throws(RestApi.WorkerError) {
+public extension RestAPI.Request.ParameterEncodable {
+    func makeRequest(withParameters: Parameters) async throws(RestAPI.WorkerError) {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await self.buildInitialParametersWithCommonHandlers()
             try encode(parameters: withParameters, intoRequest: &request)
@@ -76,8 +76,8 @@ public extension RestApi.Request.ParameterEncodable {
 
 // Дефолтная реализация метода, выполняющего запрос с параметрами с вовзращаемым значением
 // Данный метод доступен только когда воркер подписан сразу на ParameterEncodable и ResponseDecodable
-public extension RestApi.Request.ParameterEncodable where Self: RestApi.Response.ResponseDecodable {
-    func launch(withParameters: Parameters) async throws(RestApi.WorkerError) -> Response {
+public extension RestAPI.Request.ParameterEncodable where Self: RestAPI.Response.ResponseDecodable {
+    func makeRequest(withParameters: Parameters) async throws(RestAPI.WorkerError) -> Response {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await buildInitialParametersWithCommonHandlers()
             try encode(parameters: withParameters, intoRequest: &request)

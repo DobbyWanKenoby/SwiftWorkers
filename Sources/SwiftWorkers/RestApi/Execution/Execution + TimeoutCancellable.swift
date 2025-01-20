@@ -7,7 +7,7 @@
 
 
 
-public extension RestApi.Execution {
+public extension RestAPI.Execution {
     /// Протокол для управления временем досрочного завершения выполнения запрос
     protocol TimeoutCancellable {
         /// Количество секунд до завершения запроса, если к этому времени ответ не был получен или не была выброшена ошибка

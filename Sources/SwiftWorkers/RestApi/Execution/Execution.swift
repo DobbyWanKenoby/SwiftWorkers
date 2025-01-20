@@ -9,6 +9,6 @@
 
 // MARK: - Namespace
 
-public extension RestApi {
+public extension RestAPI {
     enum Execution {}
 }

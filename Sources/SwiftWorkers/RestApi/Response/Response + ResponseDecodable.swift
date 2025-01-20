@@ -9,20 +9,20 @@ import Foundation
 
 // MARK: - Interface
 
-public extension RestApi.Response {
+public extension RestAPI.Response {
     
     protocol ResponseDecodable: Sendable {
         associatedtype Response: Sendable, Decodable
         /// Способ кодирования параметров
         var decodingMethod: DecodingMethod { get }
-        func makeRequest() async throws(RestApi.WorkerError) -> Response
+        func makeRequest() async throws(RestAPI.WorkerError) -> Response
     }
     
 }
 
 // MARK: - Subtypes
 
-public extension RestApi.Response {
+public extension RestAPI.Response {
     /// Способ декодирования данных ответа
     enum DecodingMethod: Sendable {
         /// Данные поступают в формате JSON и декодируются в модель
@@ -45,7 +45,7 @@ public extension RestApi.Response {
                     return stringResult
                 }
             } catch {
-                throw RestApi.WorkerError.failedResultDecoding(description: error.localizedDescription)
+                throw RestAPI.WorkerError.failedResultDecoding(description: error.localizedDescription)
             }
         }
     }
@@ -53,8 +53,8 @@ public extension RestApi.Response {
 
 // MARK: - Implementation
 
-public extension RestApi.Response.ResponseDecodable where Self: RestApi.Worker  {
-    func makeRequest() async throws(RestApi.WorkerError) -> Response {
+public extension RestAPI.Response.ResponseDecodable where Self: RestAPI.Worker  {
+    func makeRequest() async throws(RestAPI.WorkerError) -> Response {
         try await wrappedIntoCancellableTask { [self] in
             let (session, request) = try await buildInitialParametersWithCommonHandlers()
             let data = try await runRequest(session: session, urlRequest: request)

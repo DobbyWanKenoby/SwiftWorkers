@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Interface
 
-public extension RestApi.Request {
+public extension RestAPI.Request {
     
     /// Расширение, позволяющее добавлять в URL-запрос определенный набор параметров, к примеру данные для авторизации
     protocol QueryItemsAddable {
@@ -21,7 +21,7 @@ public extension RestApi.Request {
 
 // MARK: - Implementation
 
-public extension RestApi.Request.QueryItemsAddable {
+public extension RestAPI.Request.QueryItemsAddable {
     func addQueryItem(request: inout URLRequest) async throws {
         for p in additionalQueryItems {
             let item = URLQueryItem(name: p.name, value: try await p.value())
@@ -32,7 +32,7 @@ public extension RestApi.Request.QueryItemsAddable {
 
 // MARK: - Subtypes
 
-public extension RestApi.Request {
+public extension RestAPI.Request {
     struct Parameter: Sendable {
         public let name: String
         public let value: @Sendable () async throws -> String

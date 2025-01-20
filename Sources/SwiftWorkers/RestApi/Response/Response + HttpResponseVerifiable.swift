@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension RestApi.Response {
+public extension RestAPI.Response {
     
     /// Расширение для обработки полученного статуса ответа от сервера
     protocol HttpStatusCodeVerifiable {
@@ -15,10 +15,10 @@ public extension RestApi.Response {
     }
 }
 
-public extension RestApi.Response.HttpStatusCodeVerifiable {
+public extension RestAPI.Response.HttpStatusCodeVerifiable {
     func handle(httpResponse: HTTPURLResponse, data: Data) throws {
         guard httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 else {
-            throw RestApi.WorkerError.failedHttpResponseStatusCode(code: httpResponse.statusCode)
+            throw RestAPI.WorkerError.failedHttpResponseStatusCode(code: httpResponse.statusCode)
         }
     }
     

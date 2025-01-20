@@ -7,13 +7,13 @@
 
 import Foundation
 
-extension RestApi {
+extension RestAPI {
     /// Расширение для тестирования
     protocol Testable {
         var testable_hookCheckingURLRequestBeforeSending: (@Sendable (URLRequest) async throws -> Void)? { get set }
     }
 }
 
-extension RestApi.Testable {
+extension RestAPI.Testable {
     var testable_hookCheckingURLRequestBeforeSending: (@Sendable (URLRequest) async throws -> Void)? { nil }
 }

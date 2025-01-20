@@ -9,14 +9,14 @@
 
 // MARK: - Namespace
 
-public extension RestApi {
+public extension RestAPI {
     /// Пространство имен для добавления функционала авторизации
     enum Authorization {}
 }
 
 // MARK: - Subtypes
 
-public extension RestApi.Authorization {
+public extension RestAPI.Authorization {
     
     /// Провайдер токенов для авторизации
     protocol TokenProvider: Sendable {

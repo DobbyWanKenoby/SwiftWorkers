@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension RestApi {
+public extension RestAPI {
     
     /// Ошибка воркера
     enum WorkerError: LocalizedError, Sendable {

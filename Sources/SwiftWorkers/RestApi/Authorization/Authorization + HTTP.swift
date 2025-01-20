@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Interface
 
-public extension RestApi.Authorization {
+public extension RestAPI.Authorization {
     
     /// Расширение для поддержка HTTP-авторизации в запросе
     protocol HttpAuthorizable {
@@ -25,7 +25,7 @@ public extension RestApi.Authorization {
 
 // MARK: - Subtypes
 
-public extension RestApi.Authorization {
+public extension RestAPI.Authorization {
     
     /// Тип авторизации для сетевого запроса
     enum HttpAuthorizationMethod: String, Sendable {
@@ -37,7 +37,7 @@ public extension RestApi.Authorization {
 
 // MARK: - Implementation
 
-public extension RestApi.Authorization.HttpAuthorizable {
+public extension RestAPI.Authorization.HttpAuthorizable {
     func addHttpAuthorizationHeader(session _: inout URLSession, request: inout URLRequest) async throws {
         request.setValue("\(httpAuthorizationMethod.rawValue) \(try await tokenProvider.token)", forHTTPHeaderField: "Authorization")
     }

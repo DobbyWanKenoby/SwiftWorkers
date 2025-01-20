@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Interface
 
-public extension RestApi.Request {
+public extension RestAPI.Request {
     
     // Расширение для включения в запрос дополнительных HTTP-заголовков
     protocol HeaderFieldAddable {
@@ -21,7 +21,7 @@ public extension RestApi.Request {
 
 // MARK: - Implementation
 
-public extension RestApi.Request.HeaderFieldAddable {
+public extension RestAPI.Request.HeaderFieldAddable {
     func addHeaders(request: inout URLRequest) async throws {
         for header in additionalHeaderFields {
             request.addValue(try await header.value(), forHTTPHeaderField: header.name)
@@ -31,7 +31,7 @@ public extension RestApi.Request.HeaderFieldAddable {
 
 // MARK: - Subtypes
 
-public extension RestApi.Request {
+public extension RestAPI.Request {
     struct AdditionalHeaderField: Sendable {
         public let name: String
         public let value: @Sendable () async throws -> String

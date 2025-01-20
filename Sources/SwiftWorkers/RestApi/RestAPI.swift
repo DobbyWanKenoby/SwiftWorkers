@@ -9,11 +9,11 @@ import Foundation
 // MARK: - Namespace
 
 /// Пространство имен для воркера, обеспечивающего работу с REST
-public enum RestApi {}
+public enum RestAPI {}
 
 // MARK: - Base Worker
 
-public extension RestApi {
+public extension RestAPI {
     
     /// Базовый Воркер. Определяет всю основную дефолтную функциональность
     protocol Worker: Sendable {
@@ -34,7 +34,7 @@ public extension RestApi {
         /// Базовый объект URLRequest, используемый для запроса
         func request(forURL url: URL) -> URLRequest
         /// Запуск выполнения запроса без параметров и возвращаемого значения
-        func launch() async throws(RestApi.WorkerError)
+        func makeRequest() async throws(RestAPI.WorkerError)
     }
 }
 
@@ -43,7 +43,7 @@ public extension RestApi {
 // Базовая имплементация свойств и методов
 // Использщуется по умолчанию для всех объектов, реализующих протокол
 // При необходимости конкретная реализация типа (struct, class, actor, enum) может переопределить методы для измнения функциональности
-public extension RestApi.Worker {
+public extension RestAPI.Worker {
     
     var session: URLSession { .shared }
     
@@ -54,7 +54,7 @@ public extension RestApi.Worker {
     internal func buildInitialParametersWithCommonHandlers() async throws -> (URLSession, URLRequest) {
         // Создаем URL
         guard let url = URL(string: baseUrlPath + urlEndpoint) else {
-            throw RestApi.WorkerError.tryingCreateURLWithWrongPath
+            throw RestAPI.WorkerError.tryingCreateURLWithWrongPath
         }
 
         // Создаем URLRequest
@@ -67,22 +67,22 @@ public extension RestApi.Worker {
         // Подготовка запроса
         do {
             // Добавляем дополнительные HTTP-заголовки
-            if let _self = self as? RestApi.Request.HeaderFieldAddable {
+            if let _self = self as? RestAPI.Request.HeaderFieldAddable {
                 try await _self.addHeaders(request: &urlRequest)
             }
             
             // Добавляем HTTP-авторизацию
-            if let _self = self as? RestApi.Authorization.HttpAuthorizable {
+            if let _self = self as? RestAPI.Authorization.HttpAuthorizable {
                 try await _self.addHttpAuthorizationHeader(session: &session, request: &urlRequest)
             }
             // Добавляем QueryItem-авторизацию
-            if let _self = self as? RestApi.Request.QueryItemsAddable {
+            if let _self = self as? RestAPI.Request.QueryItemsAddable {
                 try await _self.addQueryItem(request: &urlRequest)
             }
         } catch let error as CancellationError {
             throw error
         } catch {
-            throw RestApi.WorkerError.failedRequestPreparation(error: error)
+            throw RestAPI.WorkerError.failedRequestPreparation(error: error)
         }
         
         return (session, urlRequest)
@@ -90,7 +90,7 @@ public extension RestApi.Worker {
     
     @discardableResult
     internal func runRequest(session: URLSession, urlRequest: URLRequest) async throws -> Data {
-        if let _self = self as? RestApi.Testable {
+        if let _self = self as? RestAPI.Testable {
             try await _self.testable_hookCheckingURLRequestBeforeSending?(urlRequest)
         }
         // Запрос в сеть
@@ -99,14 +99,14 @@ public extension RestApi.Worker {
         do {
             (data, response) = try await session.data(for: urlRequest)
         } catch {
-            throw RestApi.WorkerError.failedRequest(description: error.localizedDescription)
+            throw RestAPI.WorkerError.failedRequest(description: error.localizedDescription)
         }
         
         // Обработка HTTPResponse
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw RestApi.WorkerError.failedRequest(description: "Response is not HTTPURLResponse")
+            throw RestAPI.WorkerError.failedRequest(description: "Response is not HTTPURLResponse")
         }
-        if let _self = self as? RestApi.Response.HttpStatusCodeVerifiable {
+        if let _self = self as? RestAPI.Response.HttpStatusCodeVerifiable {
             try _self.handle(httpResponse: httpResponse, data: data)
         }
         
@@ -115,11 +115,11 @@ public extension RestApi.Worker {
     
     // Оборачивает асинхронную операцию в отменяемую Task
     // Task может быть отменена, если воркер подписан на протокол RestApi.Execution.TimeoutCancellable
-    internal func wrappedIntoCancellableTask<Success: Sendable>(_ operation: @escaping @Sendable () async throws -> Success) async throws(RestApi.WorkerError) -> Success {
-        let storage = RestApi.CancellingTaskStorage<Success>()
+    internal func wrappedIntoCancellableTask<Success: Sendable>(_ operation: @escaping @Sendable () async throws -> Success) async throws(RestAPI.WorkerError) -> Success {
+        let storage = RestAPI.CancellingTaskStorage<Success>()
         do {
             return try await withTaskCancellationHandler {
-                if let _self = self as? RestApi.Execution.TimeoutCancellable {
+                if let _self = self as? RestAPI.Execution.TimeoutCancellable {
                     let cancelling = Task {
                         try await Task.sleep(for: _self.cancellationTimeout)
                         await storage.cancellableTask?.cancel()
@@ -139,14 +139,14 @@ public extension RestApi.Worker {
                     await storage.cancellableTask?.cancel()
                 }
             }
-        } catch let error as RestApi.WorkerError {
+        } catch let error as RestAPI.WorkerError {
             throw error
         } catch {
-            throw RestApi.WorkerError.other(error: error)
+            throw RestAPI.WorkerError.other(error: error)
         }
     }
     
-    func launch() async throws(RestApi.WorkerError) {
+    func makeRequest() async throws(RestAPI.WorkerError) {
         try await wrappedIntoCancellableTask {
             let (session, request) = try await self.buildInitialParametersWithCommonHandlers()
             try await self.runRequest(session: session, urlRequest: request)
@@ -156,7 +156,7 @@ public extension RestApi.Worker {
 
 // MARK: - Subtypes
 
-public extension RestApi {
+public extension RestAPI {
     
     /// Тип HTTP-запроса
     enum NetworkRequestMethod: String, Sendable {
