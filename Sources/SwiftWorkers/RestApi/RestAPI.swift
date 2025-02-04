@@ -16,7 +16,7 @@ public enum RestAPI {}
 public extension RestAPI {
     
     /// Базовый Воркер. Определяет всю основную дефолтную функциональность
-    protocol Worker: Sendable {
+    protocol Request: Sendable {
         /// Базовый URL-адрес для запросов
         var baseUrlPath: String { get }
         /// Эндпоинт для URL-запроса.
@@ -43,7 +43,7 @@ public extension RestAPI {
 // Базовая имплементация свойств и методов
 // Использщуется по умолчанию для всех объектов, реализующих протокол
 // При необходимости конкретная реализация типа (struct, class, actor, enum) может переопределить методы для измнения функциональности
-public extension RestAPI.Worker {
+public extension RestAPI.Request {
     
     var session: URLSession { .shared }
     
@@ -67,7 +67,7 @@ public extension RestAPI.Worker {
         // Подготовка запроса
         do {
             // Добавляем дополнительные HTTP-заголовки
-            if let _self = self as? RestAPI.Request.HeaderFieldAddable {
+            if let _self = self as? RestAPI.RequestConfigurable.HeaderFieldAddable {
                 try await _self.addHeaders(request: &urlRequest)
             }
             
@@ -76,7 +76,7 @@ public extension RestAPI.Worker {
                 try await _self.addHttpAuthorizationHeader(session: &session, request: &urlRequest)
             }
             // Добавляем QueryItem-авторизацию
-            if let _self = self as? RestAPI.Request.QueryItemsAddable {
+            if let _self = self as? RestAPI.RequestConfigurable.QueryItemsAddable {
                 try await _self.addQueryItem(request: &urlRequest)
             }
         } catch let error as CancellationError {
@@ -106,7 +106,7 @@ public extension RestAPI.Worker {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw RestAPI.WorkerError.failedRequest(description: "Response is not HTTPURLResponse")
         }
-        if let _self = self as? RestAPI.Response.HttpStatusCodeVerifiable {
+        if let _self = self as? RestAPI.ResponseConfigurable.HttpStatusCodeVerifiable {
             try _self.handle(httpResponse: httpResponse, data: data)
         }
         

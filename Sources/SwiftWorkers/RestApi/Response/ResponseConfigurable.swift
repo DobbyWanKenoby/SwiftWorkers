@@ -12,5 +12,5 @@ import Foundation
 // MARK: - Namespace
 
 public extension RestAPI {
-    enum Response {}
+    enum ResponseConfigurable {}
 }

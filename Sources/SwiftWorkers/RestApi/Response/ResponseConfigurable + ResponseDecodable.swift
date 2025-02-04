@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Interface
 
-public extension RestAPI.Response {
+public extension RestAPI.ResponseConfigurable {
     
     protocol ResponseDecodable: Sendable {
         associatedtype Response: Sendable, Decodable
@@ -22,7 +22,7 @@ public extension RestAPI.Response {
 
 // MARK: - Subtypes
 
-public extension RestAPI.Response {
+public extension RestAPI.ResponseConfigurable {
     /// Способ декодирования данных ответа
     enum DecodingMethod: Sendable {
         /// Данные поступают в формате JSON и декодируются в модель
@@ -53,7 +53,7 @@ public extension RestAPI.Response {
 
 // MARK: - Implementation
 
-public extension RestAPI.Response.ResponseDecodable where Self: RestAPI.Worker  {
+public extension RestAPI.ResponseConfigurable.ResponseDecodable where Self: RestAPI.Request  {
     func makeRequest() async throws(RestAPI.WorkerError) -> Response {
         try await wrappedIntoCancellableTask { [self] in
             let (session, request) = try await buildInitialParametersWithCommonHandlers()

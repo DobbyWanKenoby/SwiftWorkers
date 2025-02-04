@@ -46,17 +46,17 @@ struct RestApiTests {
 enum MockRestApiWorker {
 
     // МОК GET без параметров
-    struct Get: SwiftWorkers.RestAPI.Worker {
+    struct Get: SwiftWorkers.RestAPI.Request {
         var baseUrlPath: String = "https://www.example.com/request"
         var urlEndpoint: String = ""
         var requestMethod: SwiftWorkers.RestAPI.NetworkRequestMethod = .get
         
     }
     
-    struct GetOut<Request: Encodable & Sendable>: RestAPI.Worker,
-                                                  RestAPI.Request.ParameterEncodable {
+    struct GetOut<Request: Encodable & Sendable>: RestAPI.Request,
+                                                  RestAPI.RequestConfigurable.ParameterEncodable {
         typealias Parameters = Request
-        var encodingMethod: SwiftWorkers.RestAPI.Request.EncodingMethod = .asItemsToUrl
+        var encodingMethod: SwiftWorkers.RestAPI.RequestConfigurable.EncodingMethod = .asItemsToUrl
         
         var baseUrlPath: String = "https://www.example.com"
         var urlEndpoint: String = "/request"
@@ -69,15 +69,15 @@ enum MockRestApiWorker {
     }
     
     // МОК GET c передаваемым и получаемым параметрами
-    struct GetOutIn<Request: Encodable & Sendable, Response: Decodable & Sendable>: RestAPI.Worker,
-                        RestAPI.Request.ParameterEncodable,
-                     RestAPI.Response.ResponseDecodable {
+    struct GetOutIn<Request: Encodable & Sendable, Response: Decodable & Sendable>: RestAPI.Request,
+                        RestAPI.RequestConfigurable.ParameterEncodable,
+                     RestAPI.ResponseConfigurable.ResponseDecodable {
         
         typealias Parameters = Request
-        var encodingMethod: SwiftWorkers.RestAPI.Request.EncodingMethod = .asItemsToUrl
+        var encodingMethod: SwiftWorkers.RestAPI.RequestConfigurable.EncodingMethod = .asItemsToUrl
         
         typealias Response = Response
-        var decodingMethod: SwiftWorkers.RestAPI.Response.DecodingMethod = .asString
+        var decodingMethod: SwiftWorkers.RestAPI.ResponseConfigurable.DecodingMethod = .asString
         
         var baseUrlPath: String = "https://www.example.com/request"
         var urlEndpoint: String = ""
@@ -91,8 +91,8 @@ enum MockRestApiWorker {
     
     // МОК без параметров со дополнительными HTTP Headers
     
-    struct GetAdditionalHeaders: SwiftWorkers.RestAPI.Worker,
-                                 SwiftWorkers.RestAPI.Request.HeaderFieldAddable,
+    struct GetAdditionalHeaders: SwiftWorkers.RestAPI.Request,
+                                 SwiftWorkers.RestAPI.RequestConfigurable.HeaderFieldAddable,
                                  SwiftWorkers.RestAPI.Testable {
         var baseUrlPath: String = "https://www.example.com"
         var urlEndpoint: String = "/request"
@@ -102,7 +102,7 @@ enum MockRestApiWorker {
             configuration.protocolClasses = [URLProtocolMock.self]
             return URLSession(configuration: configuration)
         }
-        var additionalHeaderFields: [RestAPI.Request.AdditionalHeaderField] = [
+        var additionalHeaderFields: [RestAPI.RequestConfigurable.AdditionalHeaderField] = [
             .init(name: "AdditionalHeader", value: "AdditionalHeaderValue")
         ]
         var testable_hookCheckingURLRequestBeforeSending: (@Sendable (URLRequest) async throws -> Void)? = nil
@@ -120,9 +120,9 @@ enum MockRestApiWorker {
     }
 }
 
-extension MockRestApiWorker.Get: RestAPI.Request.ParameterEncodable {
+extension MockRestApiWorker.Get: RestAPI.RequestConfigurable.ParameterEncodable {
     typealias Parameters = MockRestApiWorker.Out
-    var encodingMethod: SwiftWorkers.RestAPI.Request.EncodingMethod { .asItemsToUrl }
+    var encodingMethod: SwiftWorkers.RestAPI.RequestConfigurable.EncodingMethod { .asItemsToUrl }
     var session: URLSession {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [URLProtocolMock.self]

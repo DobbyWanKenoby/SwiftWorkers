@@ -9,10 +9,10 @@ import Foundation
 
 // MARK: - Interface
 
-public extension RestAPI.Request {
+public extension RestAPI.RequestConfigurable {
     
     /// Протокол для кодирования переданных в запрос параметров
-    protocol ParameterEncodable where Self: RestAPI.Worker {
+    protocol ParameterEncodable where Self: RestAPI.Request {
         associatedtype Parameters: Sendable, Encodable
         /// Способ кодирования параметров
         var encodingMethod: EncodingMethod { get }
@@ -24,7 +24,7 @@ public extension RestAPI.Request {
 
 // MARK: - Subtypes
 
-public extension RestAPI.Request {
+public extension RestAPI.RequestConfigurable {
     /// Способ встраивания переданных данных в запрос
     enum EncodingMethod: Sendable {
         /// Данные сериализуются в JSON и встраиваются в тело запроса
@@ -53,7 +53,7 @@ public extension RestAPI.Request {
 // MARK: - Implementation
 
 // Дефолтная реализация метода кодирования параметров в запрос
-internal extension RestAPI.Request.ParameterEncodable {
+internal extension RestAPI.RequestConfigurable.ParameterEncodable {
      func encode<T: Encodable>(parameters: T, intoRequest urlRequest: inout URLRequest) throws {
         do {
             try encodingMethod.encode(parameters: parameters, intoRequest: &urlRequest)
@@ -64,7 +64,7 @@ internal extension RestAPI.Request.ParameterEncodable {
 }
 
 // Дефолтная реализация метода, выполняющего запрос с параметрами без возвращаемого значения
-public extension RestAPI.Request.ParameterEncodable {
+public extension RestAPI.RequestConfigurable.ParameterEncodable {
     func makeRequest(withParameters: Parameters) async throws(RestAPI.WorkerError) {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await self.buildInitialParametersWithCommonHandlers()
@@ -76,7 +76,7 @@ public extension RestAPI.Request.ParameterEncodable {
 
 // Дефолтная реализация метода, выполняющего запрос с параметрами с вовзращаемым значением
 // Данный метод доступен только когда воркер подписан сразу на ParameterEncodable и ResponseDecodable
-public extension RestAPI.Request.ParameterEncodable where Self: RestAPI.Response.ResponseDecodable {
+public extension RestAPI.RequestConfigurable.ParameterEncodable where Self: RestAPI.ResponseConfigurable.ResponseDecodable {
     func makeRequest(withParameters: Parameters) async throws(RestAPI.WorkerError) -> Response {
         try await wrappedIntoCancellableTask { [self] in
             var (session, request) = try await buildInitialParametersWithCommonHandlers()

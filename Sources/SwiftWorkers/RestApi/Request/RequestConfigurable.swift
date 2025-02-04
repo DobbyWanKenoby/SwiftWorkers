@@ -10,5 +10,5 @@
 // MARK: - Namespace
 
 public extension RestAPI {
-    enum Request {}
+    enum RequestConfigurable {}
 }
